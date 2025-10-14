@@ -23,6 +23,7 @@ import {
   TableChart as CsvIcon,
   Code as JsonIcon,
   Description as SummaryIcon,
+  Article as WordIcon,
 } from '@mui/icons-material'
 import { ComparisonResult } from '../../types'
 import {
@@ -32,6 +33,7 @@ import {
   exportToJSON,
   generateSummaryReport,
 } from '../../services/exportService'
+import { exportComparisonToWord } from '../../services/wordDocumentService'
 
 interface ExportDialogProps {
   open: boolean
@@ -39,14 +41,20 @@ interface ExportDialogProps {
   result: ComparisonResult | null
 }
 
-type ExportFormat = 'pdf' | 'html' | 'csv' | 'json' | 'summary'
+type ExportFormat = 'word' | 'pdf' | 'html' | 'csv' | 'json' | 'summary'
 
 const ExportDialog = ({ open, onClose, result }: ExportDialogProps) => {
-  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('pdf')
+  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('word')
   const [includeDetails, setIncludeDetails] = useState(true)
   const [exporting, setExporting] = useState(false)
 
   const exportFormats = [
+    {
+      id: 'word' as ExportFormat,
+      label: 'Word 문서 (추천)',
+      description: 'MS Word에서 열 수 있는 .docx 파일 - 표/이미지 완벽 지원',
+      icon: <WordIcon sx={{ color: '#2B579A' }} />,
+    },
     {
       id: 'pdf' as ExportFormat,
       label: 'PDF 문서',
@@ -85,6 +93,13 @@ const ExportDialog = ({ open, onClose, result }: ExportDialogProps) => {
     setExporting(true)
     try {
       switch (selectedFormat) {
+        case 'word':
+          await exportComparisonToWord(
+            result,
+            result.originalDocument.name,
+            result.modifiedDocument.name
+          )
+          break
         case 'pdf':
           await exportToPDF(result, includeDetails)
           break

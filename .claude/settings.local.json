@@ -8,7 +8,14 @@
       "Bash(npm test:*)",
       "Bash(git init:*)",
       "Bash(git config:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Complete WordCompare application\n\n- Phase 0-8 completed\n- All core features implemented:\n  * Document parsing (mammoth.js)\n  * Diff engine (diff-match-patch)\n  * Interactive UI with Material-UI\n  * Export to PDF, HTML, CSV, JSON\n  * Accept/reject changes functionality\n- 25 unit tests (100% passing)\n- Performance optimized with React.memo, useCallback, useMemo\n- Comprehensive documentation (User Guide, Deployment Guide)\n- Deployment ready for Vercel/Netlify\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(npm run test)",
+      "Bash(git stash:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
