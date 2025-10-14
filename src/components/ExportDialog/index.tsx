@@ -24,6 +24,7 @@ import {
   Code as JsonIcon,
   Description as SummaryIcon,
   Article as WordIcon,
+  Highlight as HighlightIcon,
 } from '@mui/icons-material'
 import { ComparisonResult } from '../../types'
 import {
@@ -34,6 +35,7 @@ import {
   generateSummaryReport,
 } from '../../services/exportService'
 import { exportComparisonToWord } from '../../services/wordDocumentService'
+import { exportHighlightedDocument } from '../../services/highlightedDocumentService'
 
 interface ExportDialogProps {
   open: boolean
@@ -41,7 +43,14 @@ interface ExportDialogProps {
   result: ComparisonResult | null
 }
 
-type ExportFormat = 'word' | 'pdf' | 'html' | 'csv' | 'json' | 'summary'
+type ExportFormat =
+  | 'word'
+  | 'highlighted'
+  | 'pdf'
+  | 'html'
+  | 'csv'
+  | 'json'
+  | 'summary'
 
 const ExportDialog = ({ open, onClose, result }: ExportDialogProps) => {
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('word')
@@ -51,9 +60,15 @@ const ExportDialog = ({ open, onClose, result }: ExportDialogProps) => {
   const exportFormats = [
     {
       id: 'word' as ExportFormat,
-      label: 'Word 문서 (추천)',
+      label: 'Word 문서 (비교 리포트)',
       description: 'MS Word에서 열 수 있는 .docx 파일 - 표/이미지 완벽 지원',
       icon: <WordIcon sx={{ color: '#2B579A' }} />,
+    },
+    {
+      id: 'highlighted' as ExportFormat,
+      label: '하이라이트된 수정 문서 (추천) ⭐',
+      description: '수정 문서에 변경 부분을 노란색 음영으로 표시한 Word 파일',
+      icon: <HighlightIcon sx={{ color: '#FFC107' }} />,
     },
     {
       id: 'pdf' as ExportFormat,
@@ -99,6 +114,9 @@ const ExportDialog = ({ open, onClose, result }: ExportDialogProps) => {
             result.originalDocument.name,
             result.modifiedDocument.name
           )
+          break
+        case 'highlighted':
+          await exportHighlightedDocument(result, result.modifiedDocument.name)
           break
         case 'pdf':
           await exportToPDF(result, includeDetails)
