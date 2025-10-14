@@ -397,8 +397,152 @@
 
 ---
 
+### Phase 10: Word 문서 내보내기 기능 추가 (2025-10-14) ✅ 완료
+
+#### 10.1 Word 문서 생성 서비스 구현
+- [x] docx 라이브러리 통합
+  - docx v9.5.1 설치
+  - file-saver v2.0.5 설치
+  - @types/file-saver v2.0.7 설치
+  - 총 53개 패키지 추가
+
+- [x] wordDocumentService.ts 생성
+  - exportComparisonToWord 메인 함수
+  - createWordDocument 문서 생성 함수
+  - createStatisticsTable 통계 테이블 생성
+  - createChangeParagraphs 변경사항 단락 변환
+  - createLegend 범례 생성
+  - getChangeTypeLabel 타입 레이블 함수
+
+- [x] Track Changes 스타일 구현
+  - 삭제: 빨간색 취소선
+  - 추가: 파란색 밑줄
+  - 수정: Before(빨간색 취소선) + After(파란색 밑줄)
+  - 이동: 파란색 텍스트
+  - 서식 변경: 보라색 텍스트
+
+- [x] 문서 구조 구성
+  - 제목: "문서 비교 결과" (중앙 정렬, H1)
+  - 비교 문서 정보: 원본/수정본 파일명, 비교 날짜
+  - 통계 테이블: 6가지 통계 (총/추가/삭제/수정/이동/서식)
+  - 변경사항 상세 내역: 각 변경사항별 위치, Before/After 내용
+  - 범례: 4가지 스타일 설명
+
+#### 10.2 HTML to Word 변환 서비스 구현
+- [x] htmlToWordService.ts 생성
+  - convertHtmlToWordElements 메인 함수
+  - convertElementToWord 요소별 변환
+  - convertParagraph 단락 변환
+  - convertHeading 제목 변환
+  - processTextNode 텍스트 노드 처리 (bold, italic, underline, strike)
+  - convertTable 테이블 변환 (TableCell, TableRow, borders)
+  - convertImage Base64 이미지 변환 (ImageRun)
+  - convertList 리스트 변환 (ordered/unordered)
+  - convertChildren 재귀적 자식 요소 변환
+
+- [x] 지원 HTML 요소
+  - 단락: `<p>`
+  - 제목: `<h1>` ~ `<h6>`
+  - 표: `<table>`, `<tr>`, `<td>`, `<th>`
+  - 이미지: `<img>` (base64 데이터)
+  - 리스트: `<ul>`, `<ol>`, `<li>`
+  - 텍스트 서식: `<strong>`, `<b>`, `<em>`, `<i>`, `<u>`, `<s>`, `<strike>`, `<del>`
+  - 구조: `<div>`, `<br>`
+
+#### 10.3 UI 통합
+- [x] ExportDialog 업데이트
+  - 'word' 내보내기 형식 추가
+  - WordIcon 아이콘 추가 (MUI Icons)
+  - "Word 문서 (추천)" 레이블 (기본 선택)
+  - 설명: "MS Word에서 열 수 있는 .docx 파일 - 표/이미지 완벽 지원"
+  - 내보내기 핸들러 case 추가
+
+- [x] ExportFormat 타입 업데이트
+  - 'word' 추가 (총 6가지 형식)
+
+#### 10.4 테스트 작성
+- [x] wordDocumentService.test.ts 생성
+  - 4개 단위 테스트
+  - Word 문서 생성 함수 존재 여부 테스트
+  - 비교 결과 → Word 문서 변환 테스트
+  - 모든 변경 타입 처리 테스트 (MOVED, FORMAT_CHANGED 포함)
+  - 통계 정보 포함 테스트
+
+- [x] file-saver Mock 설정
+  - vitest의 vi.mock 활용
+  - saveAs 함수 모의 객체 생성
+
+- [x] ComparisonResult Mock 데이터 생성
+  - 3가지 변경사항 (ADDED, DELETED, MODIFIED)
+  - 추가 변경 타입 (MOVED, FORMAT_CHANGED)
+  - 완전한 통계 정보
+  - DocumentFile 타입 호환 문서 정보
+
+#### 10.5 TypeScript 오류 수정
+- [x] Paragraph bold 속성 오류 수정
+  - `Paragraph({ text, bold })` → `Paragraph({ children: [TextRun({ text, bold })] })`
+  - htmlToWordService.ts 수정
+  - wordDocumentService.ts 통계 테이블 헤더 수정
+
+- [x] ImageRun 타입 오류 수정
+  - `type: 'png'` 속성 추가
+  - `as any` 타입 단언 사용 (docx 라이브러리 타입 이슈)
+
+- [x] 테스트 파일 타입 오류 수정
+  - Change 인터페이스에 맞게 Mock 데이터 구조 변경
+  - `content: { before, after }` → `content: string, beforeContent?, afterContent?`
+  - DocumentFile의 lastModified 타입 수정 (Date)
+  - File 객체 생성 추가
+
+#### 10.6 빌드 및 배포
+- [x] TypeScript 컴파일 성공
+  - 모든 타입 오류 해결
+  - strict 모드 통과
+
+- [x] 프로덕션 빌드 성공
+  - 빌드 시간: 17.93초
+  - Vite 동적 임포트 경고 (의도된 동작)
+  - 청크 크기 경고 (document-vendor 512KB, index 847KB)
+
+- [x] 테스트 실행 성공
+  - 총 29개 테스트 (25개 → 29개, +4개)
+  - 4개 파일, 모두 통과
+  - 실행 시간: 15.76초
+
+- [x] Git 커밋 및 푸시
+  - 8개 파일 변경
+  - 1,013 라인 추가
+  - 커밋 메시지: "Add Word document export with table/image support (Phase 10)"
+  - main 브랜치 푸시 완료
+
+- [x] Vercel 자동 배포
+  - GitHub 푸시 후 자동 배포 트리거
+  - 배포 URL: https://wordcompare.vercel.app/
+
+#### 기술적 특징
+- **완벽한 표/이미지 지원**: mammoth.js로 파싱한 HTML의 표와 이미지를 Word 문서로 완벽 변환
+- **Track Changes 스타일**: MS Word의 변경 내용 추적 기능과 유사한 시각적 스타일
+- **통계 정보**: 6가지 변경 타입별 통계를 테이블 형식으로 제공
+- **변경사항 상세**: 각 변경사항의 위치, Before/After 내용, 변경 타입 표시
+- **자동 파일명**: 날짜 기반 파일명 자동 생성 (비교결과_YYYY-MM-DD.docx)
+- **범례 포함**: 색상 및 스타일 의미 설명 섹션
+
+#### 프로젝트 최종 상태
+- ✅ GitHub 저장소: https://github.com/Shaun-Chang-Git/wordcompare
+- ✅ 프로덕션 배포: https://wordcompare.vercel.app/
+- ✅ 테스트: 29개 테스트 100% 통과
+- ✅ 빌드: 프로덕션 빌드 성공
+- ✅ 총 패키지: 403개 (53개 추가)
+- ✅ Word 내보내기: 표/이미지 완벽 지원
+- ✅ **모든 Phase 완료 (Phase 0-10)**
+
+---
+
 ## 🚧 다음 단계
 
+- Word 문서 내보내기 사용자 피드백 수집
+- 대용량 문서 처리 성능 최적화
+- 추가 내보내기 옵션 (선택적 변경사항만 포함)
 - 실제 사용자 피드백 수집
 - 성능 모니터링 및 최적화
 - 추가 기능 개발 (사용자 요청 기반)
@@ -416,6 +560,8 @@
 ### 문서 처리
 - **파싱**: mammoth.js (docx → HTML)
 - **비교 알고리즘**: diff-match-patch
+- **Word 생성**: docx v9.5.1 (문서 생성)
+- **파일 저장**: file-saver v2.0.5 (클라이언트 저장)
 
 ### 파일 처리
 - **업로드**: react-dropzone
@@ -737,7 +883,8 @@ npm run preview
 - ✅ 성능 최적화: 완료 (React.memo, useCallback, useMemo)
 - ✅ 배포 준비: 완료 (Vercel, Netlify 설정)
 - ✅ 프로덕션 배포: 완료 (Vercel 배포 성공)
-- ✅ **프로젝트 완성**: 모든 Phase 0-9 완료
+- ✅ Word 문서 내보내기: 완료 (표/이미지 완벽 지원)
+- ✅ **프로젝트 완성**: 모든 Phase 0-10 완료
 
 ## 📸 구현된 기능
 
@@ -787,7 +934,8 @@ npm run preview
 - ✅ Before/After 상세 표시
 
 ### 7. 내보내기 기능 (ExportDialog)
-- ✅ 5가지 형식 지원
+- ✅ 6가지 형식 지원
+  - **Word (추천)**: MS Word .docx 파일 - 표/이미지 완벽 지원 ⭐ NEW
   - PDF: 리포트 형식 (제목, 통계, 상세 변경사항)
   - HTML: 웹 문서 (그라디언트 헤더, 카드 UI)
   - CSV: Excel 호환 (UTF-8 BOM, 변경사항 목록)
