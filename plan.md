@@ -538,8 +538,137 @@
 
 ---
 
+### Phase 11: 하이라이트된 수정 문서 내보내기 (2025-10-14) ✅ 완료
+
+#### 11.1 하이라이트된 문서 생성 서비스 구현
+- [x] highlightedDocumentService.ts 생성
+  - exportHighlightedDocument 메인 함수
+  - createHighlightedDocument 문서 생성 함수
+  - createHighlightedContent HTML 파싱 및 하이라이트 적용
+  - buildChangeMap 변경사항 매핑 로직
+  - processNode DOM 트리 재귀 처리
+  - processTextWithHighlight 텍스트 하이라이트 적용
+
+- [x] 노란색 하이라이트 적용
+  - 변경된 부분에만 노란색 음영 (highlight: 'yellow')
+  - 전체 텍스트 매칭 우선
+  - 단어 단위 매칭 보조
+  - 변경되지 않은 부분은 일반 텍스트
+
+- [x] 문서 구조 생성
+  - 제목: "문서 비교 결과 - 하이라이트된 수정 문서"
+  - 파일 정보: 수정본 파일명, 비교 날짜
+  - 안내 메시지: 노란색 음영 의미 설명
+  - 통계 테이블: 변경사항 통계
+  - 수정된 문서 내용 (하이라이트 적용)
+  - 범례: 노란색 음영 설명
+
+#### 11.2 HTML 파싱 및 변환 로직
+- [x] DOM 요소 처리
+  - 단락 (`<p>`) 처리
+  - 제목 (`<h1>` ~ `<h6>`) 처리
+  - 표 (`<table>`) 요약 표시
+  - 리스트 (`<li>`) 처리 (• 불릿 포인트)
+  - 텍스트 서식 유지 (bold, italics)
+
+- [x] 변경사항 매핑
+  - afterContent 기반 매핑
+  - content 기반 매핑
+  - 텍스트 정규화 (trim)
+  - Map 자료구조 활용
+
+- [x] 하이라이트 알고리즘
+  - 전체 텍스트 일치 검사
+  - 단어 단위 분할 및 검사
+  - 하이라이트 여부 플래그 관리
+  - TextRun 배열 생성
+
+#### 11.3 UI 통합
+- [x] ExportDialog 업데이트
+  - 'highlighted' 내보내기 형식 추가
+  - HighlightIcon 아이콘 추가 (노란색)
+  - "하이라이트된 수정 문서 (추천) ⭐" 레이블
+  - 설명: "수정 문서에 변경 부분을 노란색 음영으로 표시한 Word 파일"
+  - 내보내기 핸들러 case 추가
+
+- [x] ExportFormat 타입 업데이트
+  - 'highlighted' 추가 (총 7가지 형식)
+
+#### 11.4 테스트 작성
+- [x] highlightedDocumentService.test.ts 생성
+  - 5개 단위 테스트
+  - 하이라이트된 문서 생성 함수 존재 여부 테스트
+  - 수정 문서 → 하이라이트된 Word 문서 변환 테스트
+  - 변경사항 처리 테스트
+  - 통계 정보 포함 테스트
+  - 파일명 접미사 테스트
+
+- [x] Mock 데이터 생성
+  - HTML 콘텐츠 포함 수정 문서
+  - 3가지 변경 타입 (ADDED, DELETED, MODIFIED)
+  - 완전한 통계 정보
+
+#### 11.5 TypeScript 오류 수정
+- [x] unused import 제거
+  - ChangeType import 제거
+
+- [x] italics 속성 오류 수정
+  - `Paragraph({ text, italics })` → `Paragraph({ children: [TextRun({ text, italics })] })`
+
+#### 11.6 빌드 및 배포
+- [x] TypeScript 컴파일 성공
+  - 모든 타입 오류 해결
+  - strict 모드 통과
+
+- [x] 프로덕션 빌드 성공
+  - 빌드 시간: 26.21초
+  - 번들 크기: document-vendor 512KB, index 852KB
+
+- [x] 테스트 실행 성공
+  - 총 34개 테스트 (29개 → 34개, +5개)
+  - 5개 파일, 모두 통과
+  - 실행 시간: 20.97초
+
+- [x] Git 커밋 및 푸시
+  - 4개 파일 변경 (2개 신규, 2개 수정)
+  - 613 라인 추가
+  - 커밋 메시지: "Add highlighted modified document export feature"
+  - main 브랜치 푸시 완료
+
+- [x] Vercel 자동 배포
+  - GitHub 푸시 후 자동 배포 트리거
+  - 배포 URL: https://wordcompare.vercel.app/
+
+#### 기술적 특징
+- **실용적 하이라이트**: 수정 문서에 변경된 부분만 노란색으로 표시
+- **직관적 리뷰**: 최종 문서를 보면서 어디가 바뀌었는지 한눈에 파악
+- **스마트 매핑**: 변경사항을 텍스트 내용 기반으로 정확하게 매핑
+- **완벽한 서식 유지**: Bold, Italics 등 텍스트 서식 유지
+- **자동 파일명**: "_하이라이트" 접미사 자동 추가
+- **통계 정보 포함**: 변경사항 통계 테이블 제공
+
+#### 사용 시나리오
+1. **최종 검토**: 수정된 문서에서 변경 부분만 확인
+2. **승인 요청**: 노란색으로 표시된 변경사항을 보고 검토 요청
+3. **문서 배포**: 하이라이트된 최종 문서를 팀원과 공유
+4. **이력 관리**: 변경 내역을 시각적으로 보관
+
+#### 프로젝트 최종 상태
+- ✅ GitHub 저장소: https://github.com/Shaun-Chang-Git/wordcompare
+- ✅ 프로덕션 배포: https://wordcompare.vercel.app/
+- ✅ 테스트: 34개 테스트 100% 통과
+- ✅ 빌드: 프로덕션 빌드 성공 (26.21초)
+- ✅ 총 패키지: 403개
+- ✅ 내보내기 형식: 7가지 (Word 비교 리포트, 하이라이트 문서, PDF, HTML, CSV, JSON, TXT)
+- ✅ **모든 Phase 완료 (Phase 0-11)**
+
+---
+
 ## 🚧 다음 단계
 
+- 하이라이트된 문서 사용자 피드백 수집
+- 하이라이트 색상 사용자 정의 옵션
+- 표/이미지에 대한 하이라이트 지원 강화
 - Word 문서 내보내기 사용자 피드백 수집
 - 대용량 문서 처리 성능 최적화
 - 추가 내보내기 옵션 (선택적 변경사항만 포함)
@@ -884,7 +1013,8 @@ npm run preview
 - ✅ 배포 준비: 완료 (Vercel, Netlify 설정)
 - ✅ 프로덕션 배포: 완료 (Vercel 배포 성공)
 - ✅ Word 문서 내보내기: 완료 (표/이미지 완벽 지원)
-- ✅ **프로젝트 완성**: 모든 Phase 0-10 완료
+- ✅ 하이라이트 문서 내보내기: 완료 (변경 부분 노란색 표시)
+- ✅ **프로젝트 완성**: 모든 Phase 0-11 완료
 
 ## 📸 구현된 기능
 
@@ -934,8 +1064,9 @@ npm run preview
 - ✅ Before/After 상세 표시
 
 ### 7. 내보내기 기능 (ExportDialog)
-- ✅ 6가지 형식 지원
-  - **Word (추천)**: MS Word .docx 파일 - 표/이미지 완벽 지원 ⭐ NEW
+- ✅ 7가지 형식 지원
+  - **Word 비교 리포트**: 비교 결과 상세 리포트 (.docx) - 표/이미지 완벽 지원
+  - **하이라이트 문서 (추천) ⭐**: 수정 문서에 변경 부분 노란색 표시 (.docx) - NEW!
   - PDF: 리포트 형식 (제목, 통계, 상세 변경사항)
   - HTML: 웹 문서 (그라디언트 헤더, 카드 UI)
   - CSV: Excel 호환 (UTF-8 BOM, 변경사항 목록)
