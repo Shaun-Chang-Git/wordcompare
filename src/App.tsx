@@ -141,8 +141,8 @@ function App() {
     setComparing(true)
 
     try {
-      // 비교 수행
-      const result = compareDocuments(originalFile, modifiedFile, comparisonOptions)
+      // 비교 수행 (이제 비동기)
+      const result = await compareDocuments(originalFile, modifiedFile, comparisonOptions)
 
       // 유사도 계산
       const similarity = calculateSimilarity(

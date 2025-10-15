@@ -1,9 +1,20 @@
 import DiffMatchPatch from 'diff-match-patch'
-import { Change, ChangeType, ComparisonResult, DocumentFile, ComparisonOptions } from '../types'
+import {
+  Change,
+  ChangeType,
+  ComparisonResult,
+  DocumentFile,
+  ComparisonOptions,
+} from '../types'
+import { parseDocxStructure } from './docxStructureParser'
+import { compareDocumentsStructural } from './structuralDiffEngine'
 
 /**
  * 문서 비교 엔진
- * diff-match-patch 라이브러리를 사용하여 두 문서의 차이점을 분석
+ *
+ * 두 가지 비교 모드 지원:
+ * 1. 구조 기반 비교 (신규, 권장): DOCX 내부 구조를 파싱하여 정확한 비교
+ * 2. 텍스트 기반 비교 (기존): diff-match-patch를 사용한 단순 텍스트 비교
  */
 
 const dmp = new DiffMatchPatch()
@@ -246,9 +257,45 @@ const selectComparisonLevel = (
 }
 
 /**
- * 두 문서를 비교하여 변경사항 반환
+ * 두 문서를 비교하여 변경사항 반환 (메인 함수)
+ *
+ * 자동으로 구조 기반 비교를 시도하고, 실패 시 텍스트 기반 비교로 폴백
  */
-export const compareDocuments = (
+export const compareDocuments = async (
+  original: DocumentFile,
+  modified: DocumentFile,
+  options: ComparisonOptions
+): Promise<ComparisonResult> => {
+  try {
+    // 1. 구조 기반 비교 시도 (신규, 권장)
+    console.log('구조 기반 DOCX 비교 시작...')
+
+    const originalStructure = await parseDocxStructure(original.file)
+    const modifiedStructure = await parseDocxStructure(modified.file)
+
+    const result = await compareDocumentsStructural(
+      original,
+      modified,
+      originalStructure,
+      modifiedStructure,
+      options
+    )
+
+    console.log(
+      `구조 기반 비교 완료: ${result.statistics.totalChanges}개 변경사항 발견`
+    )
+    return result
+  } catch (error) {
+    // 2. 폴백: 텍스트 기반 비교 (기존 방식)
+    console.warn('구조 기반 비교 실패, 텍스트 기반 비교로 폴백:', error)
+    return compareDocumentsLegacy(original, modified, options)
+  }
+}
+
+/**
+ * 텍스트 기반 문서 비교 (기존 방식, 폴백용)
+ */
+export const compareDocumentsLegacy = (
   original: DocumentFile,
   modified: DocumentFile,
   options: ComparisonOptions
@@ -282,7 +329,9 @@ export const compareDocuments = (
     deleted: changes.filter((c) => c.type === ChangeType.DELETED).length,
     modified: changes.filter((c) => c.type === ChangeType.MODIFIED).length,
     moved: changes.filter((c) => c.type === ChangeType.MOVED).length,
-    formatChanged: changes.filter((c) => c.type === ChangeType.FORMAT_CHANGED).length,
+    formatChanged: changes.filter(
+      (c) => c.type === ChangeType.FORMAT_CHANGED
+    ).length,
   }
 
   return {

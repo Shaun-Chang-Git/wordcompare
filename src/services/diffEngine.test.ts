@@ -117,7 +117,7 @@ describe('diffEngine', () => {
       htmlContent: `<p>${content}</p>`,
     })
 
-    it('두 문서를 비교하고 결과를 반환해야 함', () => {
+    it('두 문서를 비교하고 결과를 반환해야 함', async () => {
       const original = createMockDocument('original.docx', '안녕하세요')
       const modified = createMockDocument('modified.docx', '안녕하세요 반갑습니다')
       const options: ComparisonOptions = {
@@ -134,7 +134,7 @@ describe('diffEngine', () => {
         displayMode: 'sideBySide',
       }
 
-      const result = compareDocuments(original, modified, options)
+      const result = await compareDocuments(original, modified, options)
 
       expect(result).toBeDefined()
       expect(result.changes).toBeDefined()
@@ -145,7 +145,7 @@ describe('diffEngine', () => {
       expect(result.comparisonDate).toBeInstanceOf(Date)
     })
 
-    it('대소문자 구분 옵션을 적용해야 함', () => {
+    it('대소문자 구분 옵션을 적용해야 함', async () => {
       const original = createMockDocument('original.docx', 'Hello')
       const modified = createMockDocument('modified.docx', 'hello')
 
@@ -168,8 +168,8 @@ describe('diffEngine', () => {
         caseSensitive: false,
       }
 
-      const sensitiveResult = compareDocuments(original, modified, sensitiveOptions)
-      const insensitiveResult = compareDocuments(original, modified, insensitiveOptions)
+      const sensitiveResult = await compareDocuments(original, modified, sensitiveOptions)
+      const insensitiveResult = await compareDocuments(original, modified, insensitiveOptions)
 
       expect(sensitiveResult.statistics.totalChanges).toBeGreaterThan(0)
       expect(insensitiveResult.statistics.totalChanges).toBe(0)
